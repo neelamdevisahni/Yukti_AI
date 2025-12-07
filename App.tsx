@@ -5,7 +5,7 @@ import ControlPanel from './components/ControlPanel';
 import { useGeminiLive } from './hooks/useGeminiLive';
 import { Expression } from './types';
 
-const MODEL_URL = './shizuku/shizuku.model.json';
+const MODEL_URL = 'https://raw.githubusercontent.com/neelamdevisahni/Yukti/refs/heads/main/shizuku/shizuku.model.json';
 
 const App: React.FC = () => {
   const [currentExpression, setCurrentExpression] = useState<Expression | null>(null);
