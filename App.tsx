@@ -103,7 +103,7 @@ const App: React.FC = () => {
                     <span className="text-white font-bold text-lg">Y</span>
                  </div>
                  <div className="flex flex-col">
-                    <h1 className="text-white font-bold tracking-wider text-xs md:text-sm drop-shadow-md">YUKTI SYSTEM</h1>
+                    <h1 className="text-white font-bold tracking-wider text-xs md:text-sm drop-shadow-md">YUKTI</h1>
                     <span className="text-[10px] text-indigo-300 tracking-widest uppercase font-medium">Online</span>
                  </div>
             </div>
