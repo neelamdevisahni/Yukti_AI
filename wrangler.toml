@@ -1,0 +1,6 @@
+name = "yukti"
+compatibility_date = "2025-12-07"
+
+[assets]
+directory = "dist"
+binding = "ASSETS"
