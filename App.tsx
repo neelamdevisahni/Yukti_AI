@@ -4,6 +4,7 @@ import Live2DViewer from './components/Live2DViewer';
 import ControlPanel from './components/ControlPanel';
 import { useGeminiLive } from './hooks/useGeminiLive';
 import { Expression } from './types';
+import './globals.css';
 
 const MODEL_URL = 'https://raw.githubusercontent.com/neelamdevisahni/Yukti/main/shizuku/shizuku.model.json';
 
