@@ -1,5 +1,5 @@
 {
-  "name": "Yukti V5",
+  "name": "Yukti AI",
   "description": "A real-time voice assistant powered by Gemini Live API, featuring a fully animated Live2D avatar.",
   "requestFramePermissions": [
     "microphone",

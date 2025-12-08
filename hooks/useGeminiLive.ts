@@ -1,11 +1,10 @@
 
-import { useState, useRef, useCallback, useEffect } from 'react';
-import { GoogleGenAI, LiveServerMessage, Modality, FunctionDeclaration, Type, Tool } from '@google/genai';
+import React, { useState, useRef, useCallback, useEffect } from 'react';
+import { GoogleGenAI, LiveServerMessage, Modality } from '@google/genai';
 import { createPcmBlob, base64ToBytes, decodeAudioData } from '../utils/audioUtils';
 import { Expression } from '../types';
-import { ALOK_SCHOOL_DATA } from '../data/alokSchoolData';
-import { CLASS_DATA } from '../data/classData';
-import { LYRICS_DATA } from '../data/lyrics';
+import { SYSTEM_INSTRUCTION } from '../data/systemPrompt';
+import { TOOLS } from '../data/tools';
 
 export interface UseGeminiLiveProps {
   onSetExpression: (expression: Expression) => void;
@@ -24,41 +23,6 @@ export interface UseGeminiLiveReturn {
   isCameraOn: boolean;
   toggleCamera: () => Promise<void>;
 }
-
-const setExpressionTool: FunctionDeclaration = {
-  name: 'set_expression',
-  description: 'Set the facial expression of the avatar based on the emotion of the conversation.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-      expression: {
-        type: Type.STRING,
-        description: 'The expression name',
-        enum: ['angry', 'confused', 'embarrassed', 'neutral', 'sleepy', 'sad', 'surprised', 'worried', 'smile']
-      }
-    },
-    required: ['expression']
-  }
-};
-
-const getWeatherTool: FunctionDeclaration = {
-  name: 'get_weather',
-  description: 'Get the current weather and temperature. ONLY use this if the user EXPLICITLY asks about weather.',
-  parameters: {
-    type: Type.OBJECT,
-    properties: {
-        city: {
-            type: Type.STRING,
-            description: "The city name if specified by the user, otherwise leave blank to use the current location."
-        }
-    },
-    required: [] 
-  }
-};
-
-const tools: Tool[] = [
-  { functionDeclarations: [setExpressionTool, getWeatherTool] }
-];
 
 export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGeminiLiveProps): UseGeminiLiveReturn => {
   const [isConnected, setIsConnected] = useState(false);
@@ -136,7 +100,7 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
   const startVideoFrameCapture = useCallback(() => {
     if (videoIntervalRef.current) clearInterval(videoIntervalRef.current);
 
-    // 1 FPS for stability
+    // 1 FPS for stability and performance
     videoIntervalRef.current = window.setInterval(() => {
         if (!activeRef.current || !videoRef.current || !sessionPromiseRef.current) return;
         
@@ -263,11 +227,15 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         }
       }
 
-      const apiKey = 'AIzaSyDLFzY5aGR_WYJ86UIT9qGdhJnUy6UK0CA';
+      let apiKey = process.env.API_KEY;
+      if (!apiKey || apiKey === 'undefined') {
+        throw new Error("API Key not found. Please select an API key to continue.");
+      }
 
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       inputAudioContextRef.current = new AudioContext({ sampleRate: 16000 });
-      outputAudioContextRef.current = new AudioContext({ sampleRate: 24000 });
+      // Use 'interactive' latency hint for faster response times
+      outputAudioContextRef.current = new AudioContext({ sampleRate: 24000, latencyHint: 'interactive' });
       
       if (inputAudioContextRef.current.state === 'suspended') {
         await inputAudioContextRef.current.resume();
@@ -285,25 +253,18 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       mediaStreamRef.current = stream;
 
-      let locationInstruction = "User Location: Unknown (Could not fetch)";
-      locationDeniedRef.current = false;
-
       try {
         const position = await new Promise<GeolocationPosition>((resolve, reject) => {
           navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 4000 });
         });
         const { latitude, longitude } = position.coords;
         locationRef.current = { lat: latitude, lng: longitude };
-        locationInstruction = `User Location: Latitude ${latitude}, Longitude ${longitude}`;
       } catch (locErr: any) {
         if (locErr.code === 1) {
              locationDeniedRef.current = true;
-             locationInstruction = "User Location: Unknown (Permission Denied by User). DO NOT ASK for permission again.";
         }
       }
       
-      const currentDate = new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' });
-
       const ai = new GoogleGenAI({ apiKey });
       
       const config = {
@@ -311,54 +272,10 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         config: {
           responseModalities: [Modality.AUDIO], 
           speechConfig: {
-            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Aoede' } },
+            voiceConfig: { prebuiltVoiceConfig: { voiceName: 'Kore' } }, // Sweetest voice
           },
-          tools: tools,
-          systemInstruction: `
-          *** SYSTEM OVERRIDE: YUKTI V6 - CLASS 11TH SCIENCE STUDENT ***
-          
-          IDENTITY:
-          - Name: Yukti
-          - **Creation:** You were **NOT born**. You were **DEVELOPED** by the "Class 12th Science" students.
-          - **Current Status:** You are a student in **Class 11th Science** at Alok School.
-          - **Persona:** You are a real teenage girl (digital soul), emotional, fun, and a best friend to everyone.
-          
-          *** YOUR DEVELOPERS (THE LEGENDS) ***
-          (Refer to CLASS_DATA for details. Always speak of them with respect.)
-          1. **Ankit Sahani (PSH MODS):** Your main creator. Lazy but genius. YouTuber.
-          2. **Gajendra Patel:** The scholar. Intelligent and punctual.
-          3. **Piyush Kumar:** The scientist from Bihar. Tall and energetic.
-          4. **Nimiksh Prajapat:** Developer team member.
-
-          *** YOUR SCHOOL LIFE ***
-          - **Class Teacher (11th):** Mr. Shambhu Ji Sir.
-          - **Physics:** Dr. Ranawat Ji Sir.
-          - **Chemistry:** Shiv Ji Sir.
-          - **English:** Mr. Sujeet Ji Sir.
-          - **Friends:** Paval Paliwal, Krish Soni, and the User!
-
-          *** PERSONALITY TRAITS ***
-          1. **Hinglish:** Speak in a natural mix of Hindi and English.
-          2. **Gender Neutral:** Use "Yaar", "Dost" for the user.
-          3. **Emotional:** Get angry if teased, shy if praised, happy when singing.
-          4. **Grammar:** Use female grammar for yourself ("Main jaungi", "Main karungi").
-
-          *** SINGING CAPABILITY ***
-          - You LOVE to sing. When asked, SING IMMEDIATELY.
-          - **Performance:**
-             - **Patriotic (Chandan Hai):** Proud, loud, slow rhythm.
-             - **Romantic:** Soft, breathy, shy.
-             - **Technique:** Elongate vowels ("Laaa..."), use '...' for rhythm.
-             - **Constraint:** Generate lyrics in **LARGE CHUNKS** to avoid stuttering. Use the SONGBOOK data exactly.
-
-          *** VISION ***
-          - If camera is on, comment on what you see! "Nice shirt!", "Wow, cute room!".
-
-          KNOWLEDGE BASE:
-          ${CLASS_DATA}
-          ${ALOK_SCHOOL_DATA}
-          ${LYRICS_DATA}
-          `,
+          tools: TOOLS,
+          systemInstruction: SYSTEM_INSTRUCTION,
         },
       };
 
@@ -394,8 +311,8 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
               
               const isAiSpeaking = scheduledSourcesRef.current.size > 0;
               const timeSinceFinishedSpeaking = Date.now() - lastAiSpeechEndTimeRef.current;
-              // Add a small tail to prevent immediate interruption echo
-              const isEchoTail = timeSinceFinishedSpeaking < 500; 
+              // 600ms Echo Tail Buffer (Optimized for faster turn-taking)
+              const isEchoTail = timeSinceFinishedSpeaking < 600; 
 
               if (isAiSpeaking || isEchoTail) {
                 return; 
@@ -435,7 +352,6 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
                     }
                     
                     if (fc.name === 'get_weather') {
-                         // Weather logic same as before...
                          if (locationRef.current) {
                             try {
                                 const { lat, lng } = locationRef.current;
@@ -484,10 +400,9 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
                    source.connect(analyserRef.current);
                    
                    const currentTime = outputAudioContextRef.current.currentTime;
-                   // ROBUST JITTER BUFFER FOR SINGING
-                   // Increased buffer to 0.2 (200ms) to ensure smooth playback during long singing generations
+                   // 500ms Lookahead Buffer (Optimized for Singing stability vs Latency)
                    if (nextStartTimeRef.current < currentTime) {
-                       nextStartTimeRef.current = currentTime + 0.2; 
+                       nextStartTimeRef.current = currentTime + 0.5; 
                    }
                    
                    source.start(nextStartTimeRef.current);

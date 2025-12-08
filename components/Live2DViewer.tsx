@@ -26,7 +26,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({ modelUrl, analyser, express
       return;
     }
 
-    // High Quality Rendering Settings
+    // ULTRA QUALITY & PERFORMANCE SETTINGS
     const app = new PIXI.Application({
       view: canvasRef.current,
       autoStart: true,
@@ -34,9 +34,10 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({ modelUrl, analyser, express
       transparent: true,
       backgroundAlpha: 0,
       antialias: true,    // Smooth edges
-      resolution: Math.max(window.devicePixelRatio, 2), // Force High DPI (Max quality)
+      resolution: Math.max(window.devicePixelRatio, 3), // ULTRA SHARP (3x scaling if supported)
       autoDensity: true,
-      powerPreference: "high-performance"
+      powerPreference: "high-performance", // Force GPU usage
+      sharedTicker: true // Smoother animation loop
     });
     appRef.current = app;
 
@@ -98,7 +99,7 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({ modelUrl, analyser, express
         
         // Use the smaller scale to ensure it fits, but on mobile maybe zoom in a bit more
         let scale = Math.min(finalScaleX, finalScaleY);
-        if (isMobile) scale *= 1.1; // Slight zoom on mobile for better visibility
+        if (isMobile) scale *= 1.15; // Zoom in more on mobile for impact
         
         model.scale.set(scale);
         
@@ -160,7 +161,8 @@ const Live2DViewer: React.FC<Live2DViewerProps> = ({ modelUrl, analyser, express
         }
         const average = sum / binCount;
         
-        const volume = Math.min(1, (average / 50)); 
+        // Boost lip sync sensitivity
+        const volume = Math.min(1, (average / 40)); 
         
         try {
             const core = modelRef.current.internalModel.coreModel;
