@@ -27,8 +27,8 @@ const getWeatherTool: FunctionDeclaration = {
             type: Type.STRING,
             description: "The city name if specified by the user, otherwise leave blank to use the current location."
         }
-    }
-    // removed required: [] to prevent Network Error on strict validation
+    },
+    required: [] // Added back to ensure strict schema validation compliance
   }
 };
 

@@ -120,6 +120,7 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         const base64Data = canvas.toDataURL('image/jpeg', 0.6).split(',')[1];
 
         sessionPromiseRef.current.then((session) => {
+            if (!activeRef.current) return; // Double check active state
             try {
                 session.sendRealtimeInput({
                     media: {
@@ -128,9 +129,9 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
                     }
                 });
             } catch (e) {
-                console.warn("Failed to send video frame", e);
+                console.warn("Failed to send video frame (socket likely closed)", e);
             }
-        });
+        }).catch(() => {});
 
     }, 1000); 
   }, [videoRef]);
@@ -227,13 +228,18 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         }
       }
 
-      let apiKey = process.env.API_KEY;
+      // Fallback to localStorage if process.env is empty (helps in published builds)
+      let apiKey = process.env.API_KEY || localStorage.getItem("GEMINI_API_KEY");
+      
       if (!apiKey || apiKey === 'undefined') {
         throw new Error("API Key not found. Please select an API key to continue.");
       }
 
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
-      inputAudioContextRef.current = new AudioContext({ sampleRate: 16000 });
+      
+      // Let browser decide sample rate (usually 48000) for stability
+      inputAudioContextRef.current = new AudioContext(); 
+      
       // Use 'interactive' latency hint for faster response times
       outputAudioContextRef.current = new AudioContext({ sampleRate: 24000, latencyHint: 'interactive' });
       
@@ -303,6 +309,7 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
             source.connect(inputAnalyserRef.current);
             setInputAnalyser(inputAnalyserRef.current);
 
+            // 4096 samples buffer
             const processor = inputAudioContextRef.current.createScriptProcessor(4096, 1, 1);
             processorRef.current = processor;
 
@@ -319,16 +326,17 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
               }
 
               const inputData = e.inputBuffer.getChannelData(0);
-              const inputSampleRate = inputAudioContextRef.current?.sampleRate || 16000;
+              const inputSampleRate = inputAudioContextRef.current?.sampleRate || 48000;
               const pcmBlob = createPcmBlob(inputData, inputSampleRate);
               
               sessionPromiseRef.current?.then((session) => {
+                 if (!activeRef.current) return; // Prevent sending if closed while thinking
                  try {
                      session.sendRealtimeInput({ media: pcmBlob });
                  } catch (e) {
-                     console.warn("Error sending audio input:", e);
+                     // Ignore duplicate close errors
                  }
-              });
+              }).catch(() => {});
             };
 
             const muteNode = inputAudioContextRef.current.createGain();
@@ -375,10 +383,11 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
                 }
                 if (functionResponses.length > 0) {
                      sessionPromiseRef.current?.then((session) => {
+                        if (!activeRef.current) return;
                         try {
                             session.sendToolResponse({ functionResponses });
                         } catch (e) {
-                            console.error("Error sending tool response:", e);
+                             console.error("Error sending tool response:", e);
                         }
                      });
                 }
