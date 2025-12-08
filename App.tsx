@@ -6,6 +6,7 @@ import { useGeminiLive } from './hooks/useGeminiLive';
 import { Expression } from './types';
 
 const MODEL_URL = './shizuku/shizuku.model.json';
+const API_KEY = 'AIzaSyDLFzY5aGR_WYJ86UIT9qGdhJnUy6UK0CA';
 
 const App: React.FC = () => {
   const [currentExpression, setCurrentExpression] = useState<Expression | null>(null);
@@ -22,7 +23,8 @@ const App: React.FC = () => {
   const { isConnected, isConnecting, connect, disconnect, analyser, inputAnalyser, error, isCameraOn, toggleCamera } = useGeminiLive({
       onSetExpression: handleSetExpression,
       onTranscript: handleTranscript,
-      videoRef
+      videoRef,
+      apiKey: API_KEY
   });
   
   return (

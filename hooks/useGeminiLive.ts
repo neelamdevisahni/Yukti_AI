@@ -11,6 +11,7 @@ export interface UseGeminiLiveProps {
   onSetExpression: (expression: Expression) => void;
   onTranscript: (text: string, role: 'user' | 'assistant') => void;
   videoRef: React.RefObject<HTMLVideoElement | null>;
+  apiKey?: string;
 }
 
 export interface UseGeminiLiveReturn {
@@ -65,6 +66,9 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
+
+  const propsRef = useRef<UseGeminiLiveProps>(null!);
+  propsRef.current = { onSetExpression, onTranscript, videoRef, apiKey };
 
   const inputAudioContextRef = useRef<AudioContext | null>(null);
   const outputAudioContextRef = useRef<AudioContext | null>(null);
@@ -263,7 +267,7 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         }
       }
 
-      let apiKey = process.env.API_KEY;
+      let apiKey = propsRef.current?.apiKey || import.meta.env.VITE_API_KEY;
       if (!apiKey || apiKey === 'undefined') {
         throw new Error("API Key not found. Please select an API key to continue.");
       }
