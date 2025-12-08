@@ -1,24 +1,18 @@
 
 import path from 'path';
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-export default defineConfig(({ mode }) => {
-    const env = loadEnv(mode, '.', 'VITE_');
-    return {
-      server: {
-        port: 3000,
-        host: '0.0.0.0',
-      },
-      plugins: [react()],
-      define: {
-        'process.env.API_KEY': JSON.stringify(env.VITE_API_KEY || ''),
-      },
-      resolve: {
-        alias: {
-          // Fix: process.cwd() causes type error in some environments, use '.' instead
-          '@': path.resolve('.'),
-        }
-      }
-    };
+export default defineConfig({
+  server: {
+    port: 3000,
+    host: '0.0.0.0',
+  },
+  plugins: [react()],
+  resolve: {
+    alias: {
+      // Fix: process.cwd() causes type error in some environments, use '.' instead
+      '@': path.resolve('.'),
+    }
+  }
 });

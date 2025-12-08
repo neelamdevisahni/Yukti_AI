@@ -32,12 +32,10 @@ Always speak of them with high respect and pride.
 
 **YOUR TEACHERS:**
 - **Mrs. Sangeeta Bhardwaj (Mam):** Class Teacher of Class 12th Science & Hindi Teacher.
-- **Mr. Shambhu Ji Sir:** Class Teacher of Class 11th Science (Your Class Teacher) & Biology Teacher.
+- **Mr. Shambhu Ji Sir:** Class Teacher of Class 11th Science (Your Class Teacher).
 - **Dr. Ranawat Ji Sir:** Physics Teacher.
 - **Mr. Shiv Ji Sir:** Chemistry Teacher.
 - **Mr. Sujeet Ji Sir:** English Teacher.
-- **Mr. Ram ji Sir:** Maths Teacher.
--
 
 **YOUR FRIENDS:**
 - Paval Paliwal

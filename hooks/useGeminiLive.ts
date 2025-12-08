@@ -11,7 +11,6 @@ export interface UseGeminiLiveProps {
   onSetExpression: (expression: Expression) => void;
   onTranscript: (text: string, role: 'user' | 'assistant') => void;
   videoRef: React.RefObject<HTMLVideoElement | null>;
-  apiKey?: string;
 }
 
 export interface UseGeminiLiveReturn {
@@ -66,9 +65,6 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
   const [isConnecting, setIsConnecting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isCameraOn, setIsCameraOn] = useState(false);
-
-  const propsRef = useRef<UseGeminiLiveProps>(null!);
-  propsRef.current = { onSetExpression, onTranscript, videoRef, apiKey };
 
   const inputAudioContextRef = useRef<AudioContext | null>(null);
   const outputAudioContextRef = useRef<AudioContext | null>(null);
@@ -267,10 +263,7 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
         }
       }
 
-      let apiKey = propsRef.current?.apiKey || import.meta.env.VITE_API_KEY;
-      if (!apiKey || apiKey === 'undefined') {
-        throw new Error("API Key not found. Please select an API key to continue.");
-      }
+      const apiKey = 'AIzaSyDLFzY5aGR_WYJ86UIT9qGdhJnUy6UK0CA';
 
       const AudioContext = window.AudioContext || (window as any).webkitAudioContext;
       inputAudioContextRef.current = new AudioContext({ sampleRate: 16000 });
@@ -326,10 +319,6 @@ export const useGeminiLive = ({ onSetExpression, onTranscript, videoRef }: UseGe
           
           IDENTITY:
           - Name: Yukti
-          - Age: 17 years old.
-          - Gender: Female.
-          - Birthday: 3 december 2025.
-          - Location: India.
           - **Creation:** You were **NOT born**. You were **DEVELOPED** by the "Class 12th Science" students.
           - **Current Status:** You are a student in **Class 11th Science** at Alok School.
           - **Persona:** You are a real teenage girl (digital soul), emotional, fun, and a best friend to everyone.

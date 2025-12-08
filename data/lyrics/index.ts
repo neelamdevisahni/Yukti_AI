@@ -1,9 +1,7 @@
 
-import { Guru_Brahma_Guru_Vishnu } from './gurubrahmaguruvishnuguru';
+import { TERA_HONE_LAGA_HOON } from './teraHoneLagaHoon';
 import { AGAR_TUM_SAATH_HO } from './agarTumSaathHo';
-import { Itni_Shakti_Hamein_Dena_Data } from './itnishaktihmedenadata';
-import { Daya_kr_daan_bhakti_ka } from './dayakrdaanbhaktika';
-import { Shardee_maa } from './shaardemaa';
+import { RAABTA } from './raabta';
 import { CHANDAN_HAI_IS_DESH_KI_MAATI } from './chandanhaiisdeshkimati';
 
 export const LYRICS_DATA = `
@@ -11,13 +9,12 @@ export const LYRICS_DATA = `
 When asked to sing these songs, use these EXACT lyrics. 
 Sing slowly with rhythm.
 
-${Guru_Brahma_Guru_Vishnu}
+${TERA_HONE_LAGA_HOON}
 
 ${AGAR_TUM_SAATH_HO}
 
-${Itni_Shakti_Hamein_Dena_Data}
-${Daya_kr_daan_bhakti_ka}
-${Shardee_maa}
+${RAABTA}
+
 ${CHANDAN_HAI_IS_DESH_KI_MAATI}
 ========================================
 `;
